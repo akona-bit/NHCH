@@ -52,12 +52,33 @@ export const SpatialMap = () => {
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   const [previewModalAsset, setPreviewModalAsset] = useState<any | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const { language } = useSettings();
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleCopyId = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(id);
+    // Có thể thay alert bằng toast notification nếu có library
+  };
 
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const processFile = (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
       alert("File is too large! Please select a file smaller than 5MB.");
       return;
@@ -70,15 +91,21 @@ export const SpatialMap = () => {
                       (file.type.startsWith('video/') ? 'video' : 
                       (file.type.startsWith('audio/') ? 'audio' : 
                       (file.type.startsWith('application/') || file.name.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx)$/i) ? 'document' : 'text')));
-      setEditForm({ 
-        ...editForm, 
+      setEditForm(prev => ({ 
+        ...prev, 
         file_reference: reader.result as string,
         file_reference_signed: undefined,
         type: newType,
-        tac_pham: editForm.tac_pham || file.name
-      });
+        tac_pham: prev.tac_pham || file.name
+      }));
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+
   };
 
   useEffect(() => {
@@ -493,8 +520,8 @@ export const SpatialMap = () => {
                   key={asset.ma_ngu_lieu}
                   onClick={() => setSelectedAsset(asset)}
                   className={cn(
-                    "group bg-surface border rounded-xl overflow-hidden cursor-pointer transition-all hover:shadow-md relative",
-                    selectedAsset?.ma_ngu_lieu === asset.ma_ngu_lieu ? "border-primary ring-1 ring-primary" : "border-outline-variant hover:border-outline",
+                    "group glass-panel rounded-xl overflow-hidden cursor-pointer transition-all hover:-translate-y-1 relative shadow-sm hover:shadow-xl",
+                    selectedAsset?.ma_ngu_lieu === asset.ma_ngu_lieu ? "border-primary ring-1 ring-primary shadow-primary/20" : "border-outline-variant hover:border-primary/50",
                     selectedItems.includes(asset.ma_ngu_lieu) && "ring-2 ring-primary/50"
                   )}
                 >
@@ -507,31 +534,37 @@ export const SpatialMap = () => {
                       onClick={(e) => e.stopPropagation()}
                     />
                   </div>
-                  <div className="aspect-[4/3] relative border-b border-outline-variant bg-surface-dim">
+                  <div className="aspect-[4/3] relative border-b border-outline-variant bg-surface-dim overflow-hidden">
                     {renderPreview(asset)}
                     <div className={cn(
-                      "absolute top-2 right-2 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border backdrop-blur-sm",
+                      "absolute top-2 right-2 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md shadow-sm",
                       TypeColor(asset.type)
                     )}>
                       {asset.type}
                     </div>
                   </div>
-                  <div className="p-3">
+                  <div className="p-4 bg-surface/50 backdrop-blur-sm">
                     <h3 className="font-medium text-on-surface text-sm truncate" title={asset.tac_pham || asset.ma_ngu_lieu}>
                       {asset.tac_pham || asset.ma_ngu_lieu}
                     </h3>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-outline font-mono">{asset.ma_ngu_lieu}</span>
+                    <div className="flex items-center justify-between mt-3">
+                      <button 
+                        onClick={(e) => handleCopyId(e, asset.ma_ngu_lieu)}
+                        className="text-[10px] text-outline font-mono bg-surface-bright/50 px-2 py-1 rounded border border-outline-variant hover:border-primary hover:text-primary transition-colors flex items-center gap-1"
+                        title={language === 'vi' ? 'Sao chép ID' : 'Copy ID'}
+                      >
+                        {asset.ma_ngu_lieu.substring(0, 8)}...
+                      </button>
                       <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button 
                           onClick={(e) => { e.stopPropagation(); setEditForm(asset); setIsEditing(true); }}
-                          className="p-1 text-outline hover:text-primary transition-colors bg-background rounded"
+                          className="p-1.5 text-outline hover:text-primary hover:bg-primary/10 transition-colors bg-surface-bright rounded border border-outline-variant hover:border-primary/30"
                         >
                           <Edit className="w-3.5 h-3.5" />
                         </button>
                         <button 
                           onClick={(e) => { e.stopPropagation(); setItemToDelete(asset); }}
-                          className="p-1 text-outline hover:text-error transition-colors bg-background rounded"
+                          className="p-1.5 text-outline hover:text-error hover:bg-error/10 transition-colors bg-surface-bright rounded border border-outline-variant hover:border-error/30"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -698,17 +731,25 @@ export const SpatialMap = () => {
 
       {/* Edit/Add Modal */}
       {isEditing && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-surface border border-outline-variant p-6 rounded-xl w-full max-w-2xl shadow-2xl">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div 
+            className={cn(
+              "glass-panel border-outline-variant p-6 rounded-xl w-full max-w-2xl shadow-2xl transition-all",
+              isDragging ? "ring-2 ring-primary bg-primary/5 scale-[1.02]" : ""
+            )}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text- font-display font-bold text-on-surface flex items-center">
+              <h2 className="text-xl font-display font-bold text-on-surface flex items-center">
                 {editForm.ma_ngu_lieu ? (
                   <><Edit className="w-5 h-5 mr-2 text-primary" /> {language === "vi" ? "Chỉnh sửa Tài nguyên" : "Edit Asset"}</>
                 ) : (
                   <><Plus className="w-5 h-5 mr-2 text-primary" /> {language === "vi" ? "Thêm Tài nguyên mới" : "New Asset"}</>
                 )}
               </h2>
-              <button onClick={() => { setIsEditing(false); setFileToUpload(null); }} className="p-1.5 text-outline hover:text-on-surface bg-background rounded transition-colors">
+              <button onClick={() => { setIsEditing(false); setFileToUpload(null); setIsDragging(false); }} className="p-1.5 text-outline hover:text-error bg-surface-bright rounded transition-colors border border-outline-variant">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -723,7 +764,7 @@ export const SpatialMap = () => {
                   placeholder={language === "vi" ? "VD: Hình ảnh cấu trúc DNA" : "e.g., DNA Structure Diagram"}
                   value={editForm.tac_pham || ""}
                   onChange={(e) => setEditForm({ ...editForm, tac_pham: e.target.value })}
-                  className="w-full bg-background border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:border-primary outline-none transition-colors"
+                  className="w-full bg-surface-bright/50 border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
               </div>
 
@@ -735,7 +776,7 @@ export const SpatialMap = () => {
                   type="text"
                   value={editForm.tac_gia || ""}
                   onChange={(e) => setEditForm({ ...editForm, tac_gia: e.target.value })}
-                  className="w-full bg-background border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:border-primary outline-none transition-colors"
+                  className="w-full bg-surface-bright/50 border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                 />
               </div>
               
@@ -745,52 +786,59 @@ export const SpatialMap = () => {
                     {language === "vi" ? "Nội dung / URL" : "Content / URL"}
                   </label>
                   <div className="flex items-center space-x-3">
-                    <span className="text-[10px] text-outline font-mono bg-surface-bright px-2 py-0.5 rounded border border-outline-variant">
-                      {language === "vi" ? "Hỗ trợ Markdown, LaTeX, Audio/Video URLs" : "Supports Markdown, LaTeX, Media URLs"}
+                    <span className="text-[10px] text-primary font-mono bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
+                      {isDragging ? (language === "vi" ? "Thả file vào đây..." : "Drop file here...") : (language === "vi" ? "Kéo thả file vào khung dưới" : "Drag & drop files below")}
                     </span>
-                    <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-3 py-1 rounded text-xs font-bold flex items-center transition-colors">
+                    <label className="cursor-pointer bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 px-3 py-1 rounded text-xs font-bold flex items-center transition-all">
                       <UploadCloud className="w-4 h-4 mr-1.5" />
-                      {language === "vi" ? "Tải File (Max 5MB)" : "Upload File (<5MB)"}
+                      {language === "vi" ? "Tải File" : "Upload File"}
                       <input type="file" className="hidden" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" onChange={handleFileUpload} />
                     </label>
                   </div>
                 </div>
-                <textarea
-                  placeholder={language === "vi" ? "Nhập văn bản, mã LaTeX, hoặc dán URL hình ảnh/video/audio vào đây..." : "Enter text, LaTeX, or paste an image/video/audio URL here..."}
-                  value={editForm.noi_dung || ""}
-                  onChange={(e) => setEditForm({ ...editForm, noi_dung: e.target.value })}
-                  className="w-full bg-background border border-outline-variant rounded-lg px-4 py-3 text-sm focus:border-primary outline-none min-h-[200px] font-mono leading-relaxed resize-y custom-scrollbar"
-                />
+                <div className="relative">
+                  <textarea
+                    placeholder={language === "vi" ? "Nhập văn bản, mã LaTeX, hoặc dán URL hình ảnh/video/audio vào đây..." : "Enter text, LaTeX, or paste an image/video/audio URL here..."}
+                    value={editForm.noi_dung || ""}
+                    onChange={(e) => setEditForm({ ...editForm, noi_dung: e.target.value })}
+                    className={cn(
+                      "w-full bg-surface-bright/30 border border-outline-variant rounded-lg px-4 py-3 text-sm focus:border-primary outline-none min-h-[200px] font-mono leading-relaxed resize-y custom-scrollbar transition-all",
+                      isDragging ? "bg-primary/5 border-primary border-dashed" : ""
+                    )}
+                  />
+                  {isDragging && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-lg border-2 border-primary border-dashed pointer-events-none">
+                      <div className="flex flex-col items-center text-primary">
+                        <UploadCloud className="w-12 h-12 mb-2 animate-bounce" />
+                        <span className="font-bold">{language === "vi" ? "Thả file vào đây để tải lên" : "Drop file to upload"}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
                 {editForm.file_reference && (
-                  <div className="mt-2 p-2 bg-surface-dim border border-outline-variant rounded flex items-center gap-2 text-sm text-on-surface">
-                    <File className="w-4 h-4 text-primary" />
-                    <span className="truncate">
+                  <div className="mt-3 p-3 bg-primary/5 border border-primary/30 rounded-lg flex items-center gap-3 text-sm text-primary shadow-sm">
+                    <File className="w-5 h-5" />
+                    <span className="truncate font-medium flex-1">
                       {editForm.file_reference.startsWith('data:') 
-                        ? (language === 'vi' ? 'Đã đính kèm file mới' : 'New file attached') 
+                        ? (language === 'vi' ? 'Đã đính kèm file mới (Chờ lưu)' : 'New file attached (Pending save)') 
                         : (editForm.file_reference.split('/').pop() || editForm.file_reference)}
                     </span>
                     <button 
                       onClick={() => { setEditForm({ ...editForm, file_reference: null }); setFileToUpload(null); }}
-                      className="ml-auto p-1 hover:bg-surface-bright rounded text-error"
+                      className="p-1.5 hover:bg-error/10 hover:text-error rounded-md transition-colors"
                       title={language === 'vi' ? 'Xóa file đính kèm' : 'Remove attached file'}
                     >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
                 )}
-                <p className="text-xs text-outline mt-2 flex items-center">
-                  <span className="w-2 h-2 rounded-full bg-primary mr-2"></span>
-                  {language === "vi" 
-                    ? "Hệ thống sẽ tự động nhận diện loại tài nguyên (Hình ảnh, Video, Audio) dựa trên nội dung bạn nhập." 
-                    : "The system automatically detects the asset type (Image, Video, Audio) based on the content."}
-                </p>
               </div>
             </div>
             
             <div className="mt-8 flex justify-end gap-3 pt-5 border-t border-outline-variant">
               <button
-                onClick={() => { setIsEditing(false); setFileToUpload(null); }}
-                className="px-5 py-2.5 bg-background border border-outline-variant hover:border-outline text-on-surface font-medium rounded-lg text-sm transition-colors"
+                onClick={() => { setIsEditing(false); setFileToUpload(null); setIsDragging(false); }}
+                className="px-5 py-2.5 bg-surface-bright hover:bg-surface-dim border border-outline-variant hover:border-outline text-on-surface font-medium rounded-lg text-sm transition-colors"
                 disabled={saving}
               >
                 {language === "vi" ? "Hủy" : "Cancel"}
@@ -847,21 +895,29 @@ export const SpatialMap = () => {
 
       {/* Preview Modal */}
       {previewModalAsset && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex flex-col">
-          <div className="flex items-center justify-between p-4 bg-surface/90 border-b border-outline-variant">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-[100] flex flex-col animate-fade-in">
+          <div className="flex items-center justify-between p-4 bg-black/50 border-b border-white/10 backdrop-blur-lg absolute top-0 w-full z-10 transition-transform">
              <div className="flex items-center gap-3">
-               <div className={cn("px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider border", TypeColor(previewModalAsset.type))}>
+               <div className={cn("px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider border shadow-sm", TypeColor(previewModalAsset.type))}>
                  {previewModalAsset.type}
                </div>
-               <h3 className="font-display font-bold text-lg text-on-surface">
+               <h3 className="font-display font-bold text-lg text-white drop-shadow-md">
                  {previewModalAsset.tac_pham || previewModalAsset.ma_ngu_lieu}
                </h3>
              </div>
-             <button onClick={() => setPreviewModalAsset(null)} className="p-2 bg-surface hover:bg-surface-bright rounded-full text-on-surface border border-outline-variant transition-colors">
-               <X className="w-5 h-5" />
-             </button>
+             <div className="flex items-center gap-2">
+               <button 
+                 onClick={(e) => handleCopyId(e, previewModalAsset.ma_ngu_lieu)}
+                 className="px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-white border border-white/20 transition-colors text-sm font-medium flex items-center gap-2"
+               >
+                 <File className="w-4 h-4" /> Copy ID
+               </button>
+               <button onClick={() => setPreviewModalAsset(null)} className="p-2 bg-white/10 hover:bg-error/80 rounded-full text-white border border-white/20 transition-colors shadow-lg">
+                 <X className="w-5 h-5" />
+               </button>
+             </div>
           </div>
-          <div className="flex-1 overflow-hidden p-6 flex items-center justify-center relative">
+          <div className="flex-1 overflow-hidden p-12 flex items-center justify-center relative mt-16 animate-slide-up">
              {renderPreview(previewModalAsset, true)}
           </div>
         </div>
