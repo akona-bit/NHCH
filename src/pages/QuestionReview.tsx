@@ -33,7 +33,7 @@ export const QuestionReview = () => {
           muc_do,
           ngay_cap_nhat,
           nguoi_tao,
-          profiles:nguoi_tao (ho_ten)
+          users:nguoi_tao (ho_ten)
         `)
         .eq('tinh_trang', 'draft')
         .order('ngay_cap_nhat', { ascending: false });
@@ -141,7 +141,7 @@ export const QuestionReview = () => {
                   {q.noi_dung}
                 </p>
                 <div className="flex justify-between items-center text-[10px] text-outline font-mono">
-                  <div className="flex items-center">by {q.profiles?.ho_ten || 'Unknown'}</div>
+                  <div className="flex items-center">by {q.users?.ho_ten || 'Unknown'}</div>
                   <div>{formatDate(q.ngay_cap_nhat)}</div>
                 </div>
               </div>

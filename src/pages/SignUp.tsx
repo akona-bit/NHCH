@@ -144,22 +144,8 @@ export const SignUp = () => {
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-on-surface">{language === 'vi' ? 'Vai trò yêu cầu' : 'Requested Role'}</label>
-              <div className="relative group">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Shield className="h-4.5 w-4.5 text-outline group-focus-within:text-primary transition-colors" />
-                </div>
-                <select className="w-full bg-surface border border-outline-variant rounded-lg pl-12 pr-10 py-3.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 text-on-surface transition-all appearance-none cursor-pointer shadow-sm" defaultValue="">
-                  <option value="" disabled>{language === 'vi' ? 'Chọn vai trò' : 'Select role'}</option>
-                  <option value="reviewer">{language === 'vi' ? 'Người kiểm duyệt (Reviewer)' : 'Reviewer'}</option>
-                  <option value="content_manager">{language === 'vi' ? 'Quản lý nội dung (Content Manager)' : 'Content Manager'}</option>
-                </select>
-                <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-outline group-focus-within:text-primary transition-colors">
-                  <ChevronDown className="h-4.5 w-4.5" />
-                </div>
-              </div>
-            </div>
+
+
 
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-on-surface">{language === 'vi' ? 'Mật khẩu' : 'Password'}</label>

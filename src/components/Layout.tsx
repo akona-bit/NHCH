@@ -32,6 +32,7 @@ export const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const { theme, setTheme, language, setLanguage, t } = useSettings();
 
@@ -43,12 +44,26 @@ export const Layout = () => {
     setLanguage(language === 'vi' ? 'en' : 'vi');
   };
 
+  const fetchUserName = async (userId: string) => {
+    try {
+      const { data } = await supabase
+        .from('users')
+        .select('ho_ten')
+        .eq('user_id', userId)
+        .single();
+      if (data) setUserName(data.ho_ten);
+    } catch (err) {
+      console.error('Error fetching user name:', err);
+    }
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
         navigate('/signin');
       } else {
         setUserEmail(session.user?.email || null);
+        if (session.user?.id) fetchUserName(session.user.id);
       }
       setAuthLoading(false);
     });
@@ -58,6 +73,7 @@ export const Layout = () => {
         navigate('/signin');
       } else {
         setUserEmail(session.user?.email || null);
+        if (session.user?.id) fetchUserName(session.user.id);
       }
     });
 
@@ -163,11 +179,11 @@ export const Layout = () => {
         <div className="p-4 border-t border-outline-variant">
           <div className="flex items-center px-3 py-3 bg-surface shadow-sm rounded-lg border border-outline-variant/50 relative group">
             <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary flex items-center justify-center text-primary font-bold text-sm mr-3 shrink-0">
-              {userEmail ? userEmail.charAt(0).toUpperCase() : 'U'}
+              {userName ? userName.charAt(0).toUpperCase() : (userEmail ? userEmail.charAt(0).toUpperCase() : 'U')}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-on-surface truncate pr-2">{userEmail || (language === 'vi' ? 'Khách' : 'Guest')}</p>
-              <p className="text-xs text-on-surface-variant truncate">{language === 'vi' ? 'Quản trị viên' : 'Administrator'}</p>
+              <p className="text-sm font-medium text-on-surface truncate pr-2">{userName || userEmail || (language === 'vi' ? 'Khách' : 'Guest')}</p>
+              <p className="text-xs text-on-surface-variant truncate">{userEmail || ''}</p>
             </div>
           </div>
         </div>

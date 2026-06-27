@@ -45,7 +45,7 @@ export const Questions = () => {
           noi_dung,
           tinh_trang,
           nguoi_tao,
-          profiles ( ho_ten, email ),
+          users:nguoi_tao ( ho_ten ),
           dap_an ( ma_dap_an, noi_dung, is_correct ),
           kien_thuc_cau_hoi (
             kien_thuc ( ten_kien_thuc )
@@ -239,7 +239,7 @@ export const Questions = () => {
                   : "Uncategorized Node";
                 const shortId = q.ma_cau_hoi ? `Q-${q.ma_cau_hoi.toString().substring(0,4).toUpperCase()}` : "Q-NEW";
                 const answers = q.dap_an || [];
-                const creatorName = q.profiles?.ho_ten || q.profiles?.email || q.nguoi_tao?.substring(0, 8) || "System Core";
+                const creatorName = q.users?.ho_ten || q.nguoi_tao?.substring(0, 8) || "System Core";
                 
                 return (
                   <div key={q.ma_cau_hoi} className={cn(

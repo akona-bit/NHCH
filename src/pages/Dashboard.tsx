@@ -52,7 +52,7 @@ export const Dashboard = () => {
         ] = await Promise.all([
           supabase.from('cau_hoi').select('*', { count: 'exact', head: true }),
           supabase.from('ngu_lieu').select('*', { count: 'exact', head: true }),
-          supabase.from('profiles').select('*', { count: 'exact', head: true }),
+          supabase.from('users').select('*', { count: 'exact', head: true }),
           supabase.from('thi_sinh').select('*', { count: 'exact', head: true }),
           supabase.from('ky_thi').select('*', { count: 'exact', head: true }),
           supabase.from('kien_thuc').select('*', { count: 'exact', head: true }),
