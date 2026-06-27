@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, Folder, Search, BookOpen } from 'lucide-react';
+import { ChevronRight, ChevronDown, Folder, Search, BookOpen, FileText } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { useSettings } from '../contexts/SettingsContext';
 import { KnowledgeTreeNode } from '../services/knowledgeService';
@@ -74,8 +74,10 @@ export const KnowledgeTree: React.FC<KnowledgeTreeProps> = ({
               )}
               <div 
                 className={cn(
-                  "flex items-center justify-between py-2 rounded-lg px-2 cursor-pointer transition-all",
-                  depth === 0 ? "mb-2 mt-4 first:mt-0 hover:bg-surface-bright/50" : (isSelected ? "bg-primary/10 text-primary" : "hover:bg-surface-bright text-on-surface-variant")
+                  "flex items-center justify-between py-2 rounded-r-lg px-2 cursor-pointer transition-all border-l-2",
+                  depth === 0 
+                    ? "mb-2 mt-4 first:mt-0 hover:bg-surface-bright/50 border-transparent" 
+                    : (isSelected ? "bg-primary/5 border-primary text-primary" : "border-transparent hover:bg-surface-bright text-on-surface-variant")
                 )}
                 onClick={() => {
                   if (depth === 0) {
@@ -103,8 +105,10 @@ export const KnowledgeTree: React.FC<KnowledgeTreeProps> = ({
                   </div>
                   {depth === 0 ? (
                     <BookOpen className="w-5 h-5 mr-3 shrink-0 text-primary" />
+                  ) : hasChildren ? (
+                    <Folder className={cn("w-4 h-4 mr-2 shrink-0", isSelected ? 'text-primary' : 'text-primary/70')} />
                   ) : (
-                    <Folder className={cn("w-4 h-4 mr-2 shrink-0", isSelected ? 'text-primary' : (hasChildren ? 'text-primary/70' : 'text-outline'))} />
+                    <FileText className={cn("w-4 h-4 mr-2 shrink-0", isSelected ? 'text-primary' : 'text-outline/70')} />
                   )}
                   <span className={cn("truncate text-sm", depth === 0 ? 'font-display font-bold text-on-surface text-base uppercase tracking-wide' : (isSelected ? 'font-bold text-primary' : 'text-on-surface'))}>{node.ten_kien_thuc}</span>
                 </div>

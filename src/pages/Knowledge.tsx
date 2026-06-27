@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Filter, Save, AlertCircle, Trash2, Link2Off, Database, GitBranch, Edit2, MoveRight, ChevronRight, Folder } from 'lucide-react';
+import { Plus, Filter, Save, AlertCircle, Trash2, Link2Off, Database, GitBranch, Edit2, MoveRight, ChevronRight, Folder, Network, Layers, LayoutGrid } from 'lucide-react';
 import { MathRenderer } from '../components/MathRenderer';
 import { supabase } from '../supabaseClient';
 import { useSettings } from '../contexts/SettingsContext';
@@ -228,24 +228,34 @@ export const Knowledge = () => {
         }
       />
       
-      {/* Header */}
-      <div className="flex justify-between items-center bg-surface px-8 py-6 border-b border-outline-variant shrink-0">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-on-surface tracking-tight mb-2">
-            {language === 'vi' ? 'Cây Kiến Thức' : 'Knowledge Tree'}
-          </h1>
-          <p className="text-sm text-on-surface-variant">
-            {language === 'vi' ? 'Tổ chức phân cấp các miền tri thức và gắn thẻ câu hỏi.' : 'Hierarchical organization of curriculum domains and question tags.'}
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button 
-            onClick={handleStartCreate}
-            className="px-4 py-2 bg-primary text-on-primary rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {language === 'vi' ? 'Thêm Nút Mới' : 'Add New Node'}
-          </button>
+      {/* Premium Header */}
+      <div className="relative overflow-hidden bg-surface px-8 py-8 border-b border-outline-variant shrink-0 z-20 shadow-sm">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-primary opacity-50" />
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="flex justify-between items-center relative z-10">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20 shadow-inner">
+              <Network className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-display font-bold text-on-surface tracking-tight mb-1">
+                {language === 'vi' ? 'Quản lý Miền Tri Thức' : 'Knowledge Taxonomy'}
+              </h1>
+              <p className="text-sm text-on-surface-variant font-medium">
+                {language === 'vi' ? 'Tổ chức phân cấp các miền tri thức và gắn thẻ câu hỏi cho ngân hàng.' : 'Hierarchical organization of curriculum domains and question tags.'}
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button 
+              onClick={handleStartCreate}
+              className="px-5 py-2.5 bg-primary text-on-primary rounded-xl text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center hover:-translate-y-0.5"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              {language === 'vi' ? 'Thêm Nút Mới' : 'Add New Node'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -329,17 +339,29 @@ export const Knowledge = () => {
                 <div className="mb-10">
                   <h3 className="text-lg font-bold text-on-surface mb-4 border-b border-outline-variant/50 pb-2">{language === 'vi' ? 'Thống kê Nút' : 'Node Statistics'}</h3>
                   <div className="grid grid-cols-3 gap-6">
-                    <div className="bg-surface border border-outline-variant rounded-xl p-5">
-                      <div className="text-xs text-on-surface-variant mb-2">{language === 'vi' ? 'Tổng Câu Hỏi' : 'Total Questions'}</div>
-                      <div className="text-3xl font-display font-bold text-on-surface">{stats.questions.toLocaleString()}</div>
+                    <div className="bg-surface/50 border border-outline-variant rounded-2xl p-6 relative overflow-hidden group hover:border-primary/50 transition-colors">
+                      <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
+                      <div className="text-xs font-mono text-outline uppercase tracking-widest mb-3 flex items-center">
+                        <Database className="w-3.5 h-3.5 mr-2 text-primary" />
+                        {language === 'vi' ? 'Tổng Câu Hỏi' : 'Total Questions'}
+                      </div>
+                      <div className="text-4xl font-display font-bold text-on-surface">{stats.questions.toLocaleString()}</div>
                     </div>
-                    <div className="bg-surface border border-outline-variant rounded-xl p-5">
-                      <div className="text-xs text-on-surface-variant mb-2">{language === 'vi' ? 'Kỳ Thi Hoạt Động' : 'Active Exams'}</div>
-                      <div className="text-3xl font-display font-bold text-on-surface">{stats.exams.toLocaleString()}</div>
+                    <div className="bg-surface/50 border border-outline-variant rounded-2xl p-6 relative overflow-hidden group hover:border-secondary/50 transition-colors">
+                      <div className="absolute -right-4 -top-4 w-24 h-24 bg-secondary/5 rounded-full blur-2xl group-hover:bg-secondary/10 transition-colors" />
+                      <div className="text-xs font-mono text-outline uppercase tracking-widest mb-3 flex items-center">
+                        <Layers className="w-3.5 h-3.5 mr-2 text-secondary" />
+                        {language === 'vi' ? 'Kỳ Thi Tham Gia' : 'Active Exams'}
+                      </div>
+                      <div className="text-4xl font-display font-bold text-on-surface">{stats.exams.toLocaleString()}</div>
                     </div>
-                    <div className="bg-surface border border-outline-variant rounded-xl p-5">
-                      <div className="text-xs text-on-surface-variant mb-2">{language === 'vi' ? 'Nút Con' : 'Sub-nodes'}</div>
-                      <div className="text-3xl font-display font-bold text-on-surface">{stats.subNodes.toLocaleString()}</div>
+                    <div className="bg-surface/50 border border-outline-variant rounded-2xl p-6 relative overflow-hidden group hover:border-tertiary/50 transition-colors">
+                      <div className="absolute -right-4 -top-4 w-24 h-24 bg-tertiary/5 rounded-full blur-2xl group-hover:bg-tertiary/10 transition-colors" />
+                      <div className="text-xs font-mono text-outline uppercase tracking-widest mb-3 flex items-center">
+                        <LayoutGrid className="w-3.5 h-3.5 mr-2 text-tertiary" />
+                        {language === 'vi' ? 'Nút Con' : 'Sub-nodes'}
+                      </div>
+                      <div className="text-4xl font-display font-bold text-on-surface">{stats.subNodes.toLocaleString()}</div>
                     </div>
                   </div>
                 </div>
@@ -376,101 +398,126 @@ export const Knowledge = () => {
                 </div>
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-outline animate-in fade-in duration-500">
-                <Folder className="w-16 h-16 mb-4 opacity-50" />
-                <h3 className="text-xl font-display text-on-surface mb-2">{language === 'vi' ? 'Chưa chọn Nút' : 'No Node Selected'}</h3>
-                <p className="text-sm text-center max-w-md">
+              <div className="h-full flex flex-col items-center justify-center text-outline animate-in fade-in duration-500 max-w-md mx-auto text-center">
+                <div className="w-24 h-24 mb-6 rounded-full bg-surface-bright flex items-center justify-center border border-outline-variant/30 shadow-inner relative">
+                  <div className="absolute inset-0 rounded-full bg-primary/5 animate-pulse" />
+                  <Network className="w-10 h-10 text-primary/40" />
+                </div>
+                <h3 className="text-2xl font-display font-bold text-on-surface mb-3 tracking-tight">
+                  {language === 'vi' ? 'Chưa chọn Điểm Kiến Thức' : 'No Node Selected'}
+                </h3>
+                <p className="text-on-surface-variant leading-relaxed">
                   {language === 'vi' 
-                    ? 'Chọn một nút từ cây kiến thức bên trái để xem chi tiết, thống kê và quản lý liên kết.'
-                    : 'Select a node from the knowledge tree on the left to view details, statistics, and manage links.'}
+                    ? 'Hãy chọn một nút từ cây kiến thức bên trái để xem chi tiết, phân tích số liệu thống kê và quản lý các câu hỏi được liên kết.'
+                    : 'Select a node from the knowledge tree on the left to view details, analyze statistics, and manage linked questions.'}
                 </p>
               </div>
             )
           ) : (
             // Create / Edit Form
-            <div className="max-w-3xl mx-auto bg-surface shadow-sm rounded-xl border border-outline-variant p-8 animate-in slide-in-from-bottom-4 fade-in duration-500">
-              <div className="mb-8 border-b border-outline-variant/50 pb-6">
-                <h2 className="font-display font-semibold text-2xl text-on-surface mb-2">
-                  {viewState === 'create' 
-                    ? (language === 'vi' ? 'Tạo nút kiến thức' : 'Create Knowledge Node')
-                    : (language === 'vi' ? 'Chỉnh sửa nút' : 'Edit Knowledge Node')}
-                </h2>
-                <p className="text-sm text-on-surface-variant">
-                  {language === 'vi' ? 'Cấu hình chi tiết cho miền tri thức này.' : 'Configure details for this knowledge domain.'}
-                </p>
+            <div className="max-w-3xl mx-auto bg-surface/80 backdrop-blur-xl shadow-2xl shadow-black/5 rounded-2xl border border-outline-variant/50 p-10 animate-in slide-in-from-bottom-8 fade-in duration-500 mt-8 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary" />
+              
+              <div className="mb-10 flex items-start gap-5 border-b border-outline-variant/30 pb-8">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                  {viewState === 'create' ? <Plus className="w-6 h-6 text-primary" /> : <Edit2 className="w-6 h-6 text-primary" />}
+                </div>
+                <div>
+                  <h2 className="font-display font-bold text-3xl text-on-surface mb-2 tracking-tight">
+                    {viewState === 'create' 
+                      ? (language === 'vi' ? 'Tạo mới Điểm Kiến thức' : 'Create Knowledge Node')
+                      : (language === 'vi' ? 'Cập nhật Điểm Kiến thức' : 'Update Knowledge Node')}
+                  </h2>
+                  <p className="text-on-surface-variant font-medium">
+                    {language === 'vi' ? 'Thiết lập siêu dữ liệu để hệ thống AI phân loại chính xác.' : 'Configure metadata for accurate AI classification.'}
+                  </p>
+                </div>
               </div>
 
               {error && (
-                <div className="mb-6 flex items-start bg-error/10 border border-error/20 rounded-lg p-4 text-error text-sm font-mono">
+                <div className="mb-8 flex items-start bg-error/10 border border-error/20 rounded-xl p-4 text-error text-sm font-mono shadow-sm">
                   <AlertCircle className="w-5 h-5 mr-3 mt-0.5 shrink-0" />
                   <p>{error}</p>
                 </div>
               )}
 
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-on-surface mb-2">{language === 'vi' ? 'Tên nút' : 'Node Name'} <span className="text-error">*</span></label>
+              <div className="space-y-8">
+                <div className="grid grid-cols-2 gap-8">
+                  <div className="relative group">
+                    <label className="block text-xs font-mono font-bold uppercase tracking-widest text-outline mb-2 group-focus-within:text-primary transition-colors">
+                      {language === 'vi' ? 'Tên nút' : 'Node Name'} <span className="text-error">*</span>
+                    </label>
                     <input 
                       type="text" 
                       value={nodeName}
                       onChange={e => setNodeName(e.target.value)}
-                      placeholder="e.g. Quantum Mechanics" 
-                      className="w-full bg-background border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 text-on-surface transition-all" 
+                      placeholder="e.g. Lượng tử học..." 
+                      className="w-full bg-background border border-outline-variant/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-on-surface transition-all font-medium shadow-sm hover:border-outline-variant" 
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-on-surface mb-2">{language === 'vi' ? 'Mã kiến thức (ID)' : 'Knowledge Code (ID)'} <span className="text-error">*</span></label>
+                  <div className="relative group">
+                    <label className="block text-xs font-mono font-bold uppercase tracking-widest text-outline mb-2 group-focus-within:text-primary transition-colors">
+                      {language === 'vi' ? 'Mã định danh (ID)' : 'Knowledge Code (ID)'} <span className="text-error">*</span>
+                    </label>
                     <input 
                       type="text" 
                       value={nodeCode}
                       onChange={e => setNodeCode(e.target.value)}
                       disabled={viewState === 'edit'}
                       placeholder="e.g. DOM-PHYS-QM" 
-                      className="w-full bg-background border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 text-primary font-mono transition-all disabled:opacity-50" 
+                      className="w-full bg-background border border-outline-variant/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-primary font-mono font-bold transition-all disabled:opacity-50 disabled:bg-surface shadow-sm hover:border-outline-variant" 
                     />
-                    {viewState === 'edit' && <p className="text-xs text-outline mt-1 font-mono">ID cannot be changed after creation.</p>}
+                    {viewState === 'edit' && <p className="text-[10px] text-outline mt-2 font-mono uppercase tracking-widest absolute -bottom-5 right-0">ID is immutable</p>}
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-2">{language === 'vi' ? 'Nút cha' : 'Parent Node'}</label>
-                  <select
-                    value={parentId || ''}
-                    onChange={(e) => setParentId(e.target.value === '' ? null : e.target.value)}
-                    className="w-full bg-background border border-outline-variant rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary text-on-surface transition-all appearance-none"
-                  >
-                    <option value="">{language === 'vi' ? '-- Gốc (Không có cha) --' : '-- Root Level (None) --'}</option>
-                    {flatNodes.filter(n => n.ma_kien_thuc !== nodeCode).map(n => (
-                      <option key={n.ma_kien_thuc} value={n.ma_kien_thuc}>{n.ten_kien_thuc} ({n.ma_kien_thuc})</option>
-                    ))}
-                  </select>
+                <div className="relative group">
+                  <label className="block text-xs font-mono font-bold uppercase tracking-widest text-outline mb-2 group-focus-within:text-primary transition-colors">
+                    {language === 'vi' ? 'Trực thuộc (Nút cha)' : 'Parent Node'}
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={parentId || ''}
+                      onChange={(e) => setParentId(e.target.value === '' ? null : e.target.value)}
+                      className="w-full bg-background border border-outline-variant/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-on-surface transition-all appearance-none font-medium shadow-sm hover:border-outline-variant pr-10"
+                    >
+                      <option value="">{language === 'vi' ? '-- Cấp cao nhất (Gốc) --' : '-- Root Level (None) --'}</option>
+                      {flatNodes.filter(n => n.ma_kien_thuc !== nodeCode).map(n => (
+                        <option key={n.ma_kien_thuc} value={n.ma_kien_thuc}>{n.ten_kien_thuc} ({n.ma_kien_thuc})</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-outline pointer-events-none group-focus-within:text-primary transition-colors" />
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-on-surface mb-2">{language === 'vi' ? 'Mô tả' : 'Description'} <span className="text-xs text-outline font-normal ml-2">(Markdown & LaTeX supported)</span></label>
+                <div className="relative group">
+                  <label className="flex items-center justify-between text-xs font-mono font-bold uppercase tracking-widest text-outline mb-2 group-focus-within:text-primary transition-colors">
+                    <span>{language === 'vi' ? 'Mô tả chi tiết' : 'Detailed Description'}</span>
+                    <span className="text-[10px] bg-surface-bright px-2 py-0.5 rounded text-outline-variant normal-case tracking-normal">Markdown + LaTeX</span>
+                  </label>
                   <textarea 
-                    className="w-full min-h-[200px] bg-background border border-outline-variant rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 text-on-surface transition-all font-mono resize-y"
-                    placeholder="Enter detailed description of the knowledge node here..."
+                    className="w-full min-h-[160px] bg-background border border-outline-variant/50 rounded-xl px-4 py-4 text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-on-surface transition-all font-mono resize-y leading-relaxed shadow-sm hover:border-outline-variant"
+                    placeholder="Provide a comprehensive description of the knowledge domain..."
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                   ></textarea>
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-outline-variant/50">
+              <div className="mt-10 flex justify-end gap-4 pt-8 border-t border-outline-variant/30">
                 <button 
                   onClick={handleCancelForm}
-                  className="px-6 py-2.5 rounded-lg text-sm font-medium border border-outline-variant hover:bg-surface-bright transition-colors text-on-surface-variant"
+                  className="px-6 py-2.5 rounded-xl text-sm font-bold border border-outline-variant hover:bg-surface-bright transition-all text-on-surface-variant hover:text-on-surface hover:shadow-sm"
                 >
-                  {language === 'vi' ? 'Hủy' : 'Cancel'}
+                  {language === 'vi' ? 'Hủy Bỏ' : 'Cancel'}
                 </button>
                 <button 
                   onClick={handleSave}
                   disabled={saving}
-                  className="px-8 py-2.5 rounded-lg text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-colors flex items-center disabled:opacity-50"
+                  className="px-8 py-2.5 rounded-xl text-sm font-bold bg-primary text-on-primary hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 flex items-center disabled:opacity-50 hover:-translate-y-0.5"
                 >
-                  {saving ? (language === 'vi' ? 'Đang lưu...' : 'Saving...') : (language === 'vi' ? 'Lưu' : 'Save Node')}
+                  <Save className="w-4 h-4 mr-2" />
+                  {saving ? (language === 'vi' ? 'Đang lưu...' : 'Saving...') : (language === 'vi' ? 'Lưu Thiết Lập' : 'Save Configuration')}
                 </button>
               </div>
             </div>
