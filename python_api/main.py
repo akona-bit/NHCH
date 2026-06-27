@@ -7,20 +7,7 @@ from pydantic import BaseModel
 from typing import List, Dict, Any
 
 from irt import mmle, chi_square, theta_estimate, true_score
-try:
-    import item_plot as ip
-except ImportError:
-    # Mock for local testing if item_plot is missing
-    class MockIP:
-        @staticmethod
-        def ketQuaCham(df_raw, df_answer): return df_raw
-        @staticmethod
-        def tinh_diem(df): 
-            df['Raw'] = df[[c for c in df.columns if c.startswith('Cau')]].sum(axis=1)
-            df['Null'] = 0
-            return df
-    ip = MockIP()
-
+from item_plot import ketQuaCham, tinh_diem
 import ctt
 
 class PipelineData(BaseModel):
@@ -43,32 +30,44 @@ async def run_pipeline(data: PipelineData):
         df_raw = pd.DataFrame(data.df_raw)
         df_answer = pd.DataFrame(data.df_answer)
         
-        # Bước 1: Chấm điểm
-        df_chamdiem = ip.ketQuaCham(df_raw, df_answer)
-        df_chamdiem = ip.tinh_diem(df_chamdiem)
+        # Bước 1: Chấm điểm bằng hàm gốc từ item_plot.py
+        if len(df_answer) > 0:
+            df_chamdiem = ketQuaCham(df_raw, df_answer)
+        else:
+            # Nếu không có df_answer (đã pre-scored), dùng trực tiếp
+            df_chamdiem = df_raw.copy()
+        
+        # Đảm bảo có cột MaDe và Gioi (cần cho ctt.cal_diff và ctt.cal_disc)
+        if 'MaDe' not in df_chamdiem.columns:
+            df_chamdiem['MaDe'] = 0
+        if 'Gioi' not in df_chamdiem.columns:
+            df_chamdiem['Gioi'] = ''
+        
+        # Bước 2: Tính điểm thô bằng hàm gốc từ item_plot.py
+        df_chamdiem = tinh_diem(df_chamdiem)
 
-        # Bước 2: CTT
+        # Bước 3: CTT
+        cau_cols = [c for c in df_chamdiem.columns if c.startswith('Cau')]
+        
         p_values = ctt.cal_diff(df_chamdiem)
         disc_ctt = ctt.cal_disc(df_chamdiem)
         std_total = df_chamdiem['Raw'].std()
-        cau_cols = [c for c in df_chamdiem.columns if c.startswith('Cau')]
         
         pbcc_dict = {}
         for col in cau_cols:
             true_g = df_chamdiem[df_chamdiem[col] == 1]['Raw']
             false_g = df_chamdiem[df_chamdiem[col] == 0]['Raw']
-            # cal_pbcc may require true_g, false_g, std_total, p_values[col]
             try:
                 pbcc_dict[col] = ctt.cal_pbcc(true_g, false_g, std_total, p_values[col])
             except:
                 pbcc_dict[col] = 0.0
 
-        # Bước 3: IRT Calibration
+        # Bước 4: IRT Calibration bằng MMLE gốc
         U = df_chamdiem[cau_cols].to_numpy()
         a_arr, b_arr = mmle(U, name=f"KyThi_{data.ma_ky_thi}", max_iter=60, K=81)
         item_params = pd.DataFrame({'a': a_arr, 'b': b_arr}, index=cau_cols)
 
-        # Bước 4: Theta
+        # Bước 5: Theta estimate
         item_params_list = list(zip(item_params['a'], item_params['b']))
         thetas = theta_estimate(U.tolist(), item_params_list)
 
@@ -105,7 +104,7 @@ async def run_pipeline(data: PipelineData):
             disc = float(disc_ctt.get(col, 0))
             irta = float(item_params['a'].iloc[j])
             irtb = float(item_params['b'].iloc[j])
-            chi2_pval = float(chi2_df.loc[col, 'p_value']) if 'p_value' in chi2_df.columns and col in chi2_df.index else None
+            chi2_pval = float(chi2_df.iloc[j]['p_value']) if 'p_value' in chi2_df.columns and j < len(chi2_df) else None
             
             results_items.append({
                 "MaCauHoi": col,
@@ -114,6 +113,7 @@ async def run_pipeline(data: PipelineData):
                 "PtBis": float(pbcc_dict.get(col, 0)),
                 "IRTa": irta,
                 "IRTb": irtb,
+                "Chi2pValue": float(chi2_pval) if chi2_pval is not None else None,
                 "QualityFlag": quality_flag(pval, disc, irta, irtb, chi2_pval)
             })
 
@@ -124,7 +124,8 @@ async def run_pipeline(data: PipelineData):
         }
 
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        import traceback
+        return {"status": "error", "message": str(e), "traceback": traceback.format_exc()}
 
 app.add_middleware(
     CORSMiddleware,
@@ -146,13 +147,11 @@ async def calibrate_irt_json(data: IRTData):
         
         results = []
         for i, col in enumerate(data.items):
-            # Cần tính fitness parameter (p-value của chi-square) 
-            # Nhưng chi-square cần theta (ước lượng năng lực). Để đơn giản trả về tham số trước
             results.append({
                 "id": col,
                 "a": float(a_est[i]),
                 "b": float(b_est[i]),
-                "fit": 1.0 # default fit for now if not computed
+                "fit": 1.0
             })
             
         return {"status": "success", "data": results}
@@ -181,7 +180,7 @@ async def calibrate_irt(file: UploadFile = File(...)):
                 "id": col,
                 "a": float(a_est[i]),
                 "b": float(b_est[i]),
-                "fit": 1.0 # placeholder
+                "fit": 1.0
             })
         
         return {"status": "success", "data": results}

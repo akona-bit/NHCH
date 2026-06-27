@@ -6,6 +6,7 @@ import { syncKnowledgeTree, flattenKnowledgeTree, KnowledgeTreeNode, KnowledgeNo
 import { supabase } from '../supabaseClient';
 import { useSettings } from '../contexts/SettingsContext';
 import { KnowledgeTree } from '../components/KnowledgeTree';
+import { AlertModal } from '../components/AlertModal';
 
 export const Matrix = () => {
   const [searchParams] = useSearchParams();
@@ -24,6 +25,9 @@ export const Matrix = () => {
   const [showAddExamModal, setShowAddExamModal] = useState(false);
   const [newExamName, setNewExamName] = useState('');
   const [creatingExam, setCreatingExam] = useState(false);
+
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [showValidationModal, setShowValidationModal] = useState(false);
 
   const [exams, setExams] = useState<any[]>([]);
   const [selectedExamId, setSelectedExamId] = useState<string>(initialExamId);
@@ -158,6 +162,179 @@ export const Matrix = () => {
     }
   };
 
+  const handleCreateExamPapers = async () => {
+    if (!selectedExamId) {
+      alert(language === 'vi' ? 'Vui lòng chọn một kỳ thi trước khi tạo đề thi.' : 'Please select an exam before generating papers.');
+      return;
+    }
+    
+    setCompiling(true);
+    addLog('Validating question bank availability...');
+
+    try {
+      // 1. Get required counts
+      const requiredCounts: Record<string, any> = {};
+      Object.entries(matrixData).forEach(([nodeId, counts]) => {
+        if (counts.nb > 0 || counts.th > 0 || counts.vd > 0 || counts.vdc > 0) {
+          requiredCounts[nodeId] = { ...counts };
+        }
+      });
+
+      if (Object.keys(requiredCounts).length === 0) {
+        setValidationError(language === 'vi' ? 'Ma trận trống. Vui lòng cấu hình số lượng câu hỏi.' : 'Matrix is empty. Please configure question quantities.');
+        setShowValidationModal(true);
+        setCompiling(false);
+        return;
+      }
+
+      // 2. Fetch published questions and knowledge links
+      const { data: qData, error: qError } = await supabase
+        .from('cau_hoi')
+        .select(`
+          ma_cau_hoi,
+          muc_do,
+          tinh_trang,
+          kien_thuc_cau_hoi ( ma_kien_thuc )
+        `)
+        .eq('tinh_trang', 'published');
+        
+      if (qError) throw qError;
+
+      const nodeIds = Object.keys(requiredCounts);
+      const availableCounts: Record<string, Record<string, number>> = {};
+      const availableQuestions: Record<string, Record<string, any[]>> = {};
+
+      nodeIds.forEach(id => {
+        availableCounts[id] = { 1: 0, 2: 0, 3: 0, 4: 0 };
+        availableQuestions[id] = { 1: [], 2: [], 3: [], 4: [] };
+      });
+
+      qData?.forEach((q: any) => {
+        if (q.muc_do && q.kien_thuc_cau_hoi) {
+            const lvl = q.muc_do.toString();
+            q.kien_thuc_cau_hoi.forEach((k: any) => {
+                if (availableCounts[k.ma_kien_thuc] && availableCounts[k.ma_kien_thuc][lvl] !== undefined) {
+                   availableCounts[k.ma_kien_thuc][lvl]++;
+                   availableQuestions[k.ma_kien_thuc][lvl].push(q);
+                }
+            });
+        }
+      });
+
+      // 3. Compare required vs available
+      const missingDetails: string[] = [];
+      const selectedQuestionIds = new Set<number>();
+      const finalSelectedQuestions: any[] = [];
+
+      for (const nodeId of nodeIds) {
+        const req = requiredCounts[nodeId];
+        const avail = availableCounts[nodeId];
+        const nodeName = flatNodes.find(n => n.ma_kien_thuc === nodeId)?.ten_kien_thuc || nodeId;
+
+        if (req.nb > avail[1]) missingDetails.push(`- [${nodeName}] Nhận biết: Cần ${req.nb}, Có ${avail[1]}`);
+        if (req.th > avail[2]) missingDetails.push(`- [${nodeName}] Thông hiểu: Cần ${req.th}, Có ${avail[2]}`);
+        if (req.vd > avail[3]) missingDetails.push(`- [${nodeName}] Vận dụng: Cần ${req.vd}, Có ${avail[3]}`);
+        if (req.vdc > avail[4]) missingDetails.push(`- [${nodeName}] Vận dụng cao: Cần ${req.vdc}, Có ${avail[4]}`);
+      }
+
+      if (missingDetails.length > 0) {
+        setValidationError(
+          (language === 'vi' ? 'Không đủ số lượng câu hỏi trong ngân hàng để thỏa mãn ma trận này:\n\n' : 'Insufficient questions in the bank for this matrix:\n\n') +
+          missingDetails.join('\n')
+        );
+        setShowValidationModal(true);
+        setCompiling(false);
+        return;
+      }
+
+      addLog('Validation passed. Generating base exam...');
+      
+      const shuffleAndPick = (array: any[], count: number) => {
+        const shuffled = [...array].sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, count);
+      };
+
+      for (const nodeId of nodeIds) {
+        const req = requiredCounts[nodeId];
+        const availQ = availableQuestions[nodeId];
+
+        if (req.nb > 0) finalSelectedQuestions.push(...shuffleAndPick(availQ[1].filter(q => !selectedQuestionIds.has(q.ma_cau_hoi)), req.nb));
+        if (req.th > 0) finalSelectedQuestions.push(...shuffleAndPick(availQ[2].filter(q => !selectedQuestionIds.has(q.ma_cau_hoi)), req.th));
+        if (req.vd > 0) finalSelectedQuestions.push(...shuffleAndPick(availQ[3].filter(q => !selectedQuestionIds.has(q.ma_cau_hoi)), req.vd));
+        if (req.vdc > 0) finalSelectedQuestions.push(...shuffleAndPick(availQ[4].filter(q => !selectedQuestionIds.has(q.ma_cau_hoi)), req.vdc));
+        
+        finalSelectedQuestions.forEach(q => selectedQuestionIds.add(q.ma_cau_hoi));
+      }
+
+      addLog(`Selected ${finalSelectedQuestions.length} unique questions for base exam.`);
+
+      // 4. Save base exam to ky_thi_cau_hoi (optional, handled softly if fails)
+      const ktchToInsert = finalSelectedQuestions.map(q => ({
+        ma_ky_thi: parseInt(selectedExamId),
+        ma_cau_hoi: q.ma_cau_hoi
+      }));
+      // First delete old to prevent duplicates
+      await supabase.from('ky_thi_cau_hoi').delete().eq('ma_ky_thi', parseInt(selectedExamId));
+      await supabase.from('ky_thi_cau_hoi').insert(ktchToInsert);
+
+      // Fetch dap_an for these questions
+      const { data: dapAnData } = await supabase
+        .from('dap_an')
+        .select('*')
+        .in('ma_cau_hoi', Array.from(selectedQuestionIds));
+
+      const numVersions = 4; // Default to 4 versions
+      addLog(`Generating ${numVersions} exam variations...`);
+
+      for (let i = 0; i < numVersions; i++) {
+        // Create de_thi
+        const { data: dtData, error: dtError } = await supabase.from('de_thi').insert({
+          ma_ky_thi: parseInt(selectedExamId),
+          random_seed: Math.floor(Math.random() * 100000)
+        }).select('ma_de_thi').single();
+
+        if (dtError || !dtData) continue;
+
+        const deThiId = dtData.ma_de_thi;
+
+        // Shuffle questions for this de_thi
+        const shuffledQuestions = [...finalSelectedQuestions].sort(() => 0.5 - Math.random());
+        
+        // Insert dap_an_de_thi
+        const dapAnDeThiToInsert: any[] = [];
+        
+        shuffledQuestions.forEach((q, qIndex) => {
+           const qAnswers = dapAnData?.filter(a => a.ma_cau_hoi === q.ma_cau_hoi) || [];
+           const shuffledAnswers = [...qAnswers].sort(() => 0.5 - Math.random());
+           
+           shuffledAnswers.forEach((ans, aIndex) => {
+             dapAnDeThiToInsert.push({
+               ma_de_thi: deThiId,
+               ma_cau_hoi: q.ma_cau_hoi,
+               ma_dap_an: ans.ma_dap_an,
+               thu_tu: aIndex + 1
+             });
+           });
+        });
+
+        // Batch insert dap_an_de_thi
+        if (dapAnDeThiToInsert.length > 0) {
+            await supabase.from('dap_an_de_thi').insert(dapAnDeThiToInsert);
+        }
+      }
+
+      addLog(`Successfully generated ${numVersions} exam paper variations for Exam ID: ${selectedExamId}.`);
+      setCompiling(false);
+      setShowDownloadModal(true);
+
+    } catch (err: any) {
+      console.error(err);
+      addLog(`Error: ${err.message}`);
+      setCompiling(false);
+      alert('Error generating exam: ' + err.message);
+    }
+  };
+
   // Calculate totals
   let totalNb = 0, totalTh = 0, totalVd = 0, totalVdc = 0;
   Object.values(matrixData).forEach(counts => {
@@ -222,19 +399,7 @@ export const Matrix = () => {
             {generating ? (language === 'vi' ? 'Đang suy nghĩ...' : 'Deep Thinking...') : (language === 'vi' ? 'AI Gợi Ý' : 'High Thinking')}
           </button>
           <button 
-            onClick={() => {
-              if (!selectedExamId) {
-                alert(language === 'vi' ? 'Vui lòng chọn một kỳ thi trước khi tạo đề thi.' : 'Please select an exam before generating papers.');
-                return;
-              }
-              addLog('Compiling exam papers based on the configured matrix...');
-              setCompiling(true);
-              setTimeout(() => {
-                addLog(`Successfully generated 5 exam paper variations for Exam ID: ${selectedExamId}.`);
-                setCompiling(false);
-                setShowDownloadModal(true);
-              }, 2000);
-            }}
+            onClick={handleCreateExamPapers}
             disabled={compiling || generating}
             className="px-4 py-2 bg-primary text-on-primary font-bold rounded text-sm flex items-center hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
@@ -540,6 +705,15 @@ export const Matrix = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showValidationModal && (
+        <AlertModal
+          isOpen={true}
+          onClose={() => setShowValidationModal(false)}
+          title={language === 'vi' ? 'Không Thể Sinh Đề Thi' : 'Cannot Generate Exam'}
+          message={validationError || ''}
+        />
       )}
     </div>
   );

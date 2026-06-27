@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Upload, ChevronRight, ChevronDown, Check, MoreVertical, Database, GitBranch, Folder, Trash2, CheckCircle2, LayoutList, FileText, Network, XCircle, Library, SearchCode, PackageOpen } from 'lucide-react';
+import { Search, Plus, Upload, ChevronRight, ChevronDown, Check, MoreVertical, Database, GitBranch, Folder, Trash2, CheckCircle2, LayoutList, FileText, Network, XCircle, Library, SearchCode, PackageOpen, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { KnowledgeTree } from '../components/KnowledgeTree';
 import { syncKnowledgeTree, flattenKnowledgeTree, KnowledgeTreeNode, KnowledgeNode } from '../services/knowledgeService';

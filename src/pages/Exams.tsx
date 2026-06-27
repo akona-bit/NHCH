@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Filter, Calendar, Users, Settings, MoreVertical, Clock, Trash2, Database, GitBranch, Link2Off, XCircle, Upload, FileSpreadsheet, LayoutTemplate } from 'lucide-react';
+import { Plus, Filter, Calendar, Users, Settings, MoreVertical, Clock, Trash2, Database, GitBranch, Link2Off, XCircle, Upload, FileSpreadsheet, LayoutTemplate, ChevronDown, ChevronRight, FileText, Download } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { supabase } from '../supabaseClient';
 import { useSettings } from '../contexts/SettingsContext';
@@ -13,6 +13,7 @@ export const Exams = () => {
   const [deleting, setDeleting] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<any | null>(null);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [expandedRows, setExpandedRows] = useState<number[]>([]);
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
   const { language } = useSettings();
 
@@ -39,7 +40,7 @@ export const Exams = () => {
       setLoading(true);
       const { data, error } = await supabase
         .from('ky_thi')
-        .select('*')
+        .select('*, de_thi(ma_de_thi, random_seed)')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -199,6 +200,11 @@ export const Exams = () => {
     }
   };
 
+  const toggleRowExpand = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setExpandedRows(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
   return (
     <div className="flex gap-6 h-full max-w-7xl mx-auto pb-10 relative">
       <LoadingOverlay isLoading={deleting} isSaving={true} message={language === 'vi' ? 'Đang xóa...' : 'Deleting...'} />
@@ -268,52 +274,87 @@ export const Exams = () => {
                   <tr><td colSpan={5} className="p-8 text-center text-outline-variant">{language === 'vi' ? 'Không tìm thấy kỳ thi nào. Tạo một kỳ thi để bắt đầu.' : 'No exams found. Create one to get started.'}</td></tr>
                 ) : (
                   filteredExams.map(exam => (
-                    <tr key={exam.ma_ky_thi} className={cn("hover:bg-surface-bright shadow-sm-high transition-colors cursor-pointer group", selectedItems.includes(exam.ma_ky_thi) && "bg-primary/5")}>
-                      <td className="px-6 py-4">
-                        <input 
-                          type="checkbox" 
-                          className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
-                          checked={selectedItems.includes(exam.ma_ky_thi)}
-                          onChange={(e) => toggleSelection(exam.ma_ky_thi, e as unknown as React.MouseEvent)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      </td>
-                      <td className="px-6 py-4 font-mono font-bold text-on-surface">EXM-24-{exam.ma_ky_thi.toString().padStart(3, '0')}</td>
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-on-surface mb-1">{exam.ten_ky_thi}</div>
-                        <div className="text-[10px] font-mono text-outline">{language === 'vi' ? 'Mã môn:' : 'Course code:'} {exam.ma_ky_thi}</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center text-xs text-on-surface mb-1">
-                          <Calendar className="w-3 h-3 mr-2 text-outline" /> 
-                          {exam.ngay_tao ? new Date(exam.ngay_tao).toLocaleDateString() : 'TBD'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex justify-end items-center gap-1">
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigate(`/matrix?examId=${exam.ma_ky_thi}`);
-                            }}
-                            className="p-1.5 text-outline hover:text-primary hover:bg-primary/10 rounded transition-colors"
-                            title={language === 'vi' ? 'Tạo Ma Trận' : 'Generate Matrix'}
-                          >
-                            <LayoutTemplate className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setItemToDelete(exam);
-                            }}
-                            className="p-1.5 text-outline hover:text-error hover:bg-error/10 rounded transition-colors"
-                            title={language === 'vi' ? 'Xóa Kỳ Thi' : 'Delete Exam'}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
+                    <React.Fragment key={exam.ma_ky_thi}>
+                      <tr 
+                        className={cn("hover:bg-surface-bright shadow-sm-high transition-colors cursor-pointer group", selectedItems.includes(exam.ma_ky_thi) && "bg-primary/5")}
+                        onClick={(e) => toggleRowExpand(exam.ma_ky_thi, e)}
+                      >
+                        <td className="px-6 py-4">
+                          <input 
+                            type="checkbox" 
+                            className="w-4 h-4 rounded border-outline-variant text-primary focus:ring-primary cursor-pointer"
+                            checked={selectedItems.includes(exam.ma_ky_thi)}
+                            onChange={(e) => toggleSelection(exam.ma_ky_thi, e as unknown as React.MouseEvent)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </td>
+                        <td className="px-6 py-4 font-mono font-bold text-on-surface">EXM-24-{exam.ma_ky_thi.toString().padStart(3, '0')}</td>
+                        <td className="px-6 py-4">
+                          <div className="font-bold text-on-surface mb-1 flex items-center gap-2">
+                             {expandedRows.includes(exam.ma_ky_thi) ? <ChevronDown className="w-4 h-4 text-outline" /> : <ChevronRight className="w-4 h-4 text-outline" />}
+                             {exam.ten_ky_thi}
+                          </div>
+                          <div className="text-[10px] font-mono text-outline ml-6">{language === 'vi' ? 'Mã môn:' : 'Course code:'} {exam.ma_ky_thi}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center text-xs text-on-surface mb-1">
+                            <Calendar className="w-3 h-3 mr-2 text-outline" /> 
+                            {exam.ngay_tao ? new Date(exam.ngay_tao).toLocaleDateString() : 'TBD'}
+                          </div>
+                          {exam.de_thi && exam.de_thi.length > 0 && (
+                            <div className="text-[10px] font-bold text-primary mt-1 px-2 py-0.5 bg-primary/10 rounded-full inline-block">
+                              {exam.de_thi.length} {language === 'vi' ? 'Mã đề' : 'Versions'}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex justify-end items-center gap-1">
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/matrix?examId=${exam.ma_ky_thi}`);
+                              }}
+                              className="p-1.5 text-outline hover:text-primary hover:bg-primary/10 rounded transition-colors"
+                              title={language === 'vi' ? 'Tạo Ma Trận' : 'Generate Matrix'}
+                            >
+                              <LayoutTemplate className="w-4 h-4" />
+                            </button>
+                            <button 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setItemToDelete(exam);
+                              }}
+                              className="p-1.5 text-outline hover:text-error hover:bg-error/10 rounded transition-colors"
+                              title={language === 'vi' ? 'Xóa Kỳ Thi' : 'Delete Exam'}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {expandedRows.includes(exam.ma_ky_thi) && exam.de_thi && exam.de_thi.length > 0 && (
+                        <tr className="bg-background/50 border-t border-outline-variant/30">
+                          <td colSpan={5} className="p-0">
+                            <div className="pl-16 pr-6 py-4 border-l-2 border-primary/30 ml-8 my-2 rounded-r-lg bg-surface-bright/50">
+                               <h4 className="text-xs font-bold text-on-surface-variant mb-3 uppercase tracking-wider">{language === 'vi' ? 'Danh sách mã đề' : 'Exam Versions'}</h4>
+                               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                 {exam.de_thi.map((dt: any) => (
+                                    <div key={dt.ma_de_thi} className="bg-surface border border-outline-variant/50 rounded-lg p-3 flex items-center justify-between hover:border-primary/50 transition-colors cursor-pointer">
+                                       <div className="flex items-center gap-2">
+                                          <FileText className="w-4 h-4 text-primary" />
+                                          <span className="font-mono font-bold text-sm text-on-surface">Mã đề: {dt.ma_de_thi}</span>
+                                       </div>
+                                       <button className="text-outline hover:text-primary transition-colors">
+                                          <Download className="w-4 h-4" />
+                                       </button>
+                                    </div>
+                                 ))}
+                               </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))
                 )}
               </tbody>

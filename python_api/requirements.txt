@@ -5,3 +5,7 @@ numpy
 scipy
 python-multipart
 openpyxl
+matplotlib
+seaborn
+statsmodels
+pygam

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, ShieldCheck, FileText, Image as ImageIcon, Code, Type, LayoutList, ChevronDown, CheckCircle2, Plus, Trash2, AlertCircle, Sparkles } from 'lucide-react';
+import { Save, ShieldCheck, FileText, Image as ImageIcon, Code, Type, LayoutList, ChevronDown, CheckCircle2, Plus, Trash2, AlertCircle, Sparkles, HelpCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { MathRenderer } from '../components/MathRenderer';
 import { supabase } from '../supabaseClient';
