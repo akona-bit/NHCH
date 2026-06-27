@@ -154,7 +154,8 @@ export const Questions = () => {
   };
 
   const filteredQuestions = questions.filter(q => {
-    const matchesSearch = q.noi_dung?.toLowerCase().includes(searchQuery.toLowerCase());
+    const contentStr = q.noi_dung || "";
+    const matchesSearch = contentStr.toLowerCase().includes(searchQuery.toLowerCase());
     let matchesNode = true;
     if (selectedNodeId) {
       const descendantNames = getDescendantNamesById(selectedNodeId);
