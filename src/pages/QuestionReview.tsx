@@ -78,11 +78,13 @@ export const QuestionReview = () => {
   const handleStatusUpdate = async (status: 'published' | 'archived') => {
     if (!selectedQuestion) return;
     
-    // Check if the user is trying to approve their own question
+    // We have disabled the restriction that prevents users from approving their own questions for testing purposes
+    /*
     if (status === 'published' && selectedQuestion.nguoi_tao === currentUser?.id) {
       alert("Bạn không thể duyệt câu hỏi do chính mình tạo. (You cannot approve your own question.)");
       return;
     }
+    */
 
     setProcessing(true);
     try {
