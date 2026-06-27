@@ -69,9 +69,6 @@ export const Users = () => {
   };
 
   const filteredUsers = users.filter(u => {
-    // Không hiển thị tài khoản của chính người đang đăng nhập (Admin)
-    if (currentUserId && u.user_id === currentUserId) return false;
-    
     if (!searchQuery) return true;
     const q = searchQuery.toLowerCase();
     return (u.user_id || '').toLowerCase().includes(q) || (u.ho_ten || '').toLowerCase().includes(q);
