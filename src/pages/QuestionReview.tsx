@@ -147,19 +147,19 @@ export const QuestionReview = () => {
       <div className="w-[350px] flex flex-col bg-surface shadow-sm rounded-xl border border-outline-variant overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-surface shadow-sm-high">
           <div>
-            <h2 className="font-display font-semibold text-lg text-on-surface">Pending Review</h2>
-            <p className="text-xs text-on-surface-variant font-mono">{questions.length} items awaiting action</p>
+            <h2 className="font-display font-semibold text-lg text-on-surface">{language === 'vi' ? 'Chờ Duyệt' : 'Pending Review'}</h2>
+            <p className="text-xs text-on-surface-variant font-mono">{questions.length} {language === 'vi' ? 'câu hỏi chờ xử lý' : 'items awaiting action'}</p>
           </div>
-          <button onClick={fetchQuestions} className="p-1.5 bg-background border border-outline-variant rounded hover:bg-surface-bright transition-colors text-outline" title="Refresh">
+          <button onClick={fetchQuestions} className="p-1.5 bg-background border border-outline-variant rounded hover:bg-surface-bright transition-colors text-outline" title={language === 'vi' ? 'Làm mới' : 'Refresh'}>
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
         
         <div className="flex-1 overflow-y-auto p-3 space-y-3">
           {loading ? (
-            <div className="text-sm text-outline-variant text-center p-4">Loading queue...</div>
+            <div className="text-sm text-outline-variant text-center p-4">{language === 'vi' ? 'Đang tải hàng đợi...' : 'Loading queue...'}</div>
           ) : questions.length === 0 ? (
-            <div className="text-sm text-outline-variant text-center p-4">Queue is empty. Great job!</div>
+            <div className="text-sm text-outline-variant text-center p-4">{language === 'vi' ? 'Hàng đợi trống. Làm tốt lắm!' : 'Queue is empty. Great job!'}</div>
           ) : (
             questions.map(q => (
               <div 
@@ -177,13 +177,13 @@ export const QuestionReview = () => {
                   <span className="text-[10px] font-mono bg-surface shadow-sm px-2 py-0.5 rounded border border-outline-variant text-on-surface">
                     Q-{q.ma_cau_hoi.toString().slice(0, 8)}
                   </span>
-                  <span className="text-[10px] font-bold text-error flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span>Pending</span>
+                  <span className="text-[10px] font-bold text-error flex items-center"><span className="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span>{language === 'vi' ? 'Chờ duyệt' : 'Pending'}</span>
                 </div>
                 <p className="text-xs text-on-surface-variant font-mono line-clamp-2 mb-3">
                   {q.noi_dung}
                 </p>
                 <div className="flex justify-between items-center text-[10px] text-outline font-mono">
-                  <div className="flex items-center">by {q.users?.ho_ten || 'Unknown'}</div>
+                  <div className="flex items-center">{language === 'vi' ? 'Bởi' : 'By'} {q.users?.ho_ten || (language === 'vi' ? 'Không rõ' : 'Unknown')}</div>
                   <div>{formatDate(q.ngay_cap_nhat)}</div>
                 </div>
               </div>
@@ -202,10 +202,10 @@ export const QuestionReview = () => {
                   <span className="px-2.5 py-1 bg-background shadow-sm border border-outline-variant/50 rounded-md text-outline">ID: {selectedQuestion.ma_cau_hoi}</span>
                   <span className="px-2.5 py-1 bg-primary/10 border border-primary/20 rounded-md text-primary font-bold">Lvl {selectedQuestion.muc_do}</span>
                   <span className="px-2.5 py-1 bg-secondary/10 border border-secondary/20 rounded-md text-secondary font-bold flex items-center">
-                    Tác giả: {selectedQuestion.users?.ho_ten || 'Unknown'} <span className="opacity-50 ml-1">({selectedQuestion.nguoi_tao ? selectedQuestion.nguoi_tao.substring(0, 8) : 'N/A'})</span>
+                    {language === 'vi' ? 'Tác giả:' : 'Creator:'} {selectedQuestion.users?.ho_ten || (language === 'vi' ? 'Không rõ' : 'Unknown')} <span className="opacity-50 ml-1">({selectedQuestion.nguoi_tao ? selectedQuestion.nguoi_tao.substring(0, 8) : 'N/A'})</span>
                   </span>
                 </div>
-                <h1 className="text-2xl font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Review Submission</h1>
+                <h1 className="text-2xl font-display font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">{language === 'vi' ? 'Duyệt Câu Hỏi' : 'Review Submission'}</h1>
               </div>
             </div>
 
@@ -213,7 +213,7 @@ export const QuestionReview = () => {
               {selectedQuestion.ngu_lieu && selectedQuestion.ngu_lieu.noi_dung && (
                 <div className="bg-surface shadow-sm rounded-xl border border-outline-variant p-6 mb-6">
                   <h3 className="text-[10px] font-bold text-on-surface tracking-widest uppercase mb-4 flex items-center text-primary">
-                    <FileText className="w-3 h-3 mr-2" /> STIMULUS / ASSET (NGỮ LIỆU ĐÍNH KÈM)
+                    <FileText className="w-3 h-3 mr-2" /> {language === 'vi' ? 'NGỮ LIỆU' : 'STIMULUS / ASSET'}
                   </h3>
                   <div className="bg-background border border-outline-variant/50 rounded-lg p-5">
                     <MathRenderer 
@@ -226,7 +226,7 @@ export const QuestionReview = () => {
 
               <div className="bg-surface shadow-sm rounded-xl border border-outline-variant p-6 mb-6">
                 <h3 className="text-[10px] font-bold text-on-surface tracking-widest uppercase mb-4 flex items-center">
-                  <FileText className="w-3 h-3 mr-2" /> QUESTION CONTENT
+                  <FileText className="w-3 h-3 mr-2" /> {language === 'vi' ? 'NỘI DUNG CÂU HỎI' : 'QUESTION CONTENT'}
                 </h3>
                 <div className="bg-background border border-outline-variant/50 rounded-lg p-5">
                   <MathRenderer 
@@ -244,10 +244,10 @@ export const QuestionReview = () => {
                         <CheckCircle2 className="w-4 h-4" />
                       </div>
                     )}
-                    <h4 className="text-xs font-bold text-on-surface mb-3 flex items-center">Option {String.fromCharCode(65 + idx)}</h4>
+                    <h4 className="text-xs font-bold text-on-surface mb-3 flex items-center">{language === 'vi' ? 'Lựa chọn' : 'Option'} {String.fromCharCode(65 + idx)}</h4>
                     <MathRenderer content={ans.noi_dung} className="text-sm font-mono text-on-surface" />
                     {ans.is_correct && (
-                      <div className="mt-6 pt-3 border-t border-secondary/20 text-[10px] font-mono text-secondary">Marked as Correct Key</div>
+                      <div className="mt-6 pt-3 border-t border-secondary/20 text-[10px] font-mono text-secondary">{language === 'vi' ? 'Đã đánh dấu là đáp án đúng' : 'Marked as Correct Key'}</div>
                     )}
                   </div>
                 ))}
@@ -256,11 +256,11 @@ export const QuestionReview = () => {
 
             {/* Action Footer */}
             <div className="bg-surface shadow-sm rounded-xl border border-outline-variant p-4">
-              <label className="block text-[10px] font-bold text-on-surface mb-2 tracking-widest uppercase">Reviewer Notes (Required for Rejection/Edit)</label>
+              <label className="block text-[10px] font-bold text-on-surface mb-2 tracking-widest uppercase">{language === 'vi' ? 'Ghi chú của người duyệt (Bắt buộc nếu từ chối)' : 'Reviewer Notes (Required for Rejection/Edit)'}</label>
               <textarea 
                 className="w-full bg-background border border-outline-variant rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-primary font-mono text-on-surface resize-none mb-4"
                 rows={3}
-                placeholder="Add comments regarding formatting, correctness, or clarity..."
+                placeholder={language === 'vi' ? "Thêm nhận xét về định dạng, độ chính xác, hoặc tính rõ ràng..." : "Add comments regarding formatting, correctness, or clarity..."}
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
               ></textarea>
@@ -271,22 +271,22 @@ export const QuestionReview = () => {
                   disabled={processing}
                   className="px-6 py-2 border border-error/50 text-error hover:bg-error/10 rounded-lg text-sm font-bold flex items-center transition-colors disabled:opacity-50"
                 >
-                  <XCircle className="w-4 h-4 mr-2" /> Reject
+                  <XCircle className="w-4 h-4 mr-2" /> {language === 'vi' ? 'Từ chối' : 'Reject'}
                 </button>
                 <button 
                   onClick={() => handleStatusUpdate('published')}
                   disabled={processing || selectedQuestion.nguoi_tao === currentUser?.id}
-                  title={selectedQuestion.nguoi_tao === currentUser?.id ? "You cannot approve your own question" : ""}
+                  title={selectedQuestion.nguoi_tao === currentUser?.id ? (language === 'vi' ? "Bạn không thể tự duyệt câu hỏi của mình" : "You cannot approve your own question") : ""}
                   className="px-8 py-2 bg-primary text-on-primary hover:bg-primary/90 rounded-lg text-sm font-bold flex items-center shadow-sm transition-colors disabled:opacity-50"
                 >
-                  <CheckCircle2 className="w-4 h-4 mr-2" /> Approve
+                  <CheckCircle2 className="w-4 h-4 mr-2" /> {language === 'vi' ? 'Duyệt' : 'Approve'}
                 </button>
               </div>
             </div>
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center text-outline">
-            <p>Select a question from the queue to review.</p>
+            <p>{language === 'vi' ? 'Chọn một câu hỏi từ danh sách bên trái để duyệt.' : 'Select a question from the queue to review.'}</p>
           </div>
         )}
       </div>

@@ -253,7 +253,7 @@ export const Questions = () => {
               )}
             </div>
             <div className="text-xs font-mono text-outline flex items-center">
-              ROWS 1-{Math.min(10, filteredQuestions.length)} / {filteredQuestions.length}
+              {language === 'vi' ? 'DÒNG' : 'ROWS'} 1-{Math.min(10, filteredQuestions.length)} / {filteredQuestions.length}
               <div className="flex items-center ml-4 gap-1">
                 <button className="p-1 hover:text-on-surface transition-colors disabled:opacity-30"><ChevronRight className="w-4 h-4 rotate-180" /></button>
                 <button className="p-1 hover:text-on-surface transition-colors"><ChevronRight className="w-4 h-4" /></button>
@@ -290,10 +290,10 @@ export const Questions = () => {
                 const isExpanded = expandedId === q.ma_cau_hoi;
                 const pathName = q.kien_thuc_cau_hoi?.[0]?.kien_thuc?.ten_kien_thuc 
                   ? getFullPath(q.kien_thuc_cau_hoi[0].kien_thuc.ten_kien_thuc) 
-                  : "Uncategorized Node";
+                  : (language === 'vi' ? "Chưa phân loại" : "Uncategorized Node");
                 const shortId = q.ma_cau_hoi ? `Q-${q.ma_cau_hoi.toString().substring(0,4).toUpperCase()}` : "Q-NEW";
                 const answers = q.dap_an || [];
-                const creatorName = q.users?.ho_ten || q.nguoi_tao?.substring(0, 8) || "System Core";
+                const creatorName = q.users?.ho_ten || q.nguoi_tao?.substring(0, 8) || (language === 'vi' ? "Hệ thống" : "System Core");
                 
                 return (
                   <div key={q.ma_cau_hoi} className={cn(
@@ -343,15 +343,15 @@ export const Questions = () => {
                         <div className="font-mono text-xs font-bold uppercase tracking-wider">
                           {q.tinh_trang === 'draft' || q.tinh_trang === 'Review' ? (
                             <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-surface-bright border border-outline-variant/50 text-outline-variant shadow-sm">
-                              <span className="w-1.5 h-1.5 rounded-full bg-outline mr-2 animate-pulse" /> PENDING
+                              <span className="w-1.5 h-1.5 rounded-full bg-outline mr-2 animate-pulse" /> {language === 'vi' ? 'CHỜ DUYỆT' : 'PENDING'}
                             </span>
                           ) : q.tinh_trang === 'rejected' ? (
                             <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-error/10 border border-error/20 text-error shadow-sm">
-                              <span className="w-1.5 h-1.5 rounded-full bg-error mr-2" /> REJECTED
+                              <span className="w-1.5 h-1.5 rounded-full bg-error mr-2" /> {language === 'vi' ? 'BỊ TỪ CHỐI' : 'REJECTED'}
                             </span>
                           ) : (
                             <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-secondary/10 border border-secondary/20 text-secondary shadow-sm">
-                              <span className="w-1.5 h-1.5 rounded-full bg-secondary mr-2" /> APPROVED
+                              <span className="w-1.5 h-1.5 rounded-full bg-secondary mr-2" /> {language === 'vi' ? 'ĐÃ DUYỆT' : 'APPROVED'}
                             </span>
                           )}
                         </div>
@@ -359,7 +359,7 @@ export const Questions = () => {
                         <div className="flex items-center gap-1.5 border-l border-outline-variant/30 pl-6">
                           {q.tinh_trang !== 'published' ? (
                             <>
-                              <Link to={`/questions/edit/${q.ma_cau_hoi}`} onClick={(e) => e.stopPropagation()} className="p-2 text-outline hover:text-primary hover:bg-primary/10 rounded-lg transition-all hover:shadow-sm" title="Edit">
+                              <Link to={`/questions/edit/${q.ma_cau_hoi}`} onClick={(e) => e.stopPropagation()} className="p-2 text-outline hover:text-primary hover:bg-primary/10 rounded-lg transition-all hover:shadow-sm" title={language === 'vi' ? 'Chỉnh sửa' : 'Edit'}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                               </Link>
                               <button 
@@ -367,13 +367,13 @@ export const Questions = () => {
                                   e.stopPropagation();
                                   setItemToDelete(q);
                                 }}
-                                className="p-2 text-outline hover:text-error hover:bg-error/10 rounded-lg transition-all hover:shadow-sm" title="Delete"
+                                className="p-2 text-outline hover:text-error hover:bg-error/10 rounded-lg transition-all hover:shadow-sm" title={language === 'vi' ? 'Xóa' : 'Delete'}
                               >
                                 <Trash2 className="w-4.5 h-4.5" />
                               </button>
                             </>
                           ) : (
-                            <div className="p-2 text-outline/50 bg-surface-bright rounded-lg border border-outline-variant/20" title="View Only (Approved)">
+                            <div className="p-2 text-outline/50 bg-surface-bright rounded-lg border border-outline-variant/20" title={language === 'vi' ? 'Chỉ xem (Đã duyệt)' : 'View Only (Approved)'}>
                               <FileText className="w-4.5 h-4.5" />
                             </div>
                           )}
@@ -396,75 +396,98 @@ export const Questions = () => {
                               <div className="mb-8 relative">
                                 <h4 className="text-xs font-mono font-bold text-secondary uppercase tracking-widest mb-3 flex items-center">
                                   <FileText className="w-4 h-4 mr-2" />
-                                  STIMULUS / ASSET
+                                  {language === 'vi' ? 'NGỮ LIỆU' : 'STIMULUS / ASSET'}
                                 </h4>
-                                <div className="font-sans text-sm text-on-surface leading-relaxed bg-secondary/5 p-6 rounded-xl border border-secondary/20 shadow-sm">
+                                <div className="bg-background rounded-xl p-5 border border-outline-variant/30 text-sm shadow-sm">
                                   <MathRenderer content={q.ngu_lieu.noi_dung} />
                                 </div>
                               </div>
                             )}
 
-                            <h4 className="text-xs font-mono font-bold text-outline-variant uppercase tracking-widest mb-3 flex items-center">
-                              <FileText className="w-4 h-4 mr-2" />
-                              Content Node
-                            </h4>
-                            <div className="font-sans text-sm text-on-surface leading-relaxed mb-8 bg-surface p-6 rounded-xl border border-outline-variant/30 shadow-sm hover:border-outline-variant/50 transition-colors">
-                              <MathRenderer content={q.noi_dung || ""} />
+                            <div>
+                              <h4 className="text-xs font-mono font-bold text-primary uppercase tracking-widest mb-3 flex items-center">
+                                <HelpCircle className="w-4 h-4 mr-2" />
+                                {language === 'vi' ? 'CÂU HỎI' : 'QUESTION STEM'}
+                              </h4>
+                              <div className="text-base text-on-surface mb-8">
+                                <MathRenderer content={q.noi_dung || ""} />
+                              </div>
                             </div>
-                            
-                            <h4 className="text-xs font-mono font-bold text-outline-variant uppercase tracking-widest mb-3 flex items-center">
-                              <LayoutList className="w-4 h-4 mr-2" />
-                              Solution Vectors
-                            </h4>
-                            <div className="space-y-3">
-                              {answers.map((ans: any, idx: number) => {
-                                const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
-                                return (
+
+                            <div>
+                              <h4 className="text-xs font-mono font-bold text-tertiary uppercase tracking-widest mb-4 flex items-center">
+                                <LayoutList className="w-4 h-4 mr-2" />
+                                {language === 'vi' ? 'CÁC LỰA CHỌN' : 'OPTIONS'}
+                              </h4>
+                              <div className="grid grid-cols-1 gap-3">
+                                {answers.map((ans: any, idx: number) => (
                                   <div 
                                     key={ans.ma_dap_an} 
                                     className={cn(
-                                      "flex items-center px-5 py-4 rounded-xl font-sans text-sm transition-all border shadow-sm",
+                                      "flex items-center p-4 rounded-xl border transition-all",
                                       ans.is_correct 
-                                        ? "bg-secondary/10 border-secondary/30 text-on-surface font-medium ring-1 ring-secondary/20" 
-                                        : "bg-surface border-outline-variant/20 text-on-surface-variant hover:bg-surface-bright hover:border-outline-variant/50"
+                                        ? "bg-secondary/10 border-secondary/50 shadow-sm" 
+                                        : "bg-background border-outline-variant/30"
                                     )}
                                   >
                                     <div className={cn(
-                                      "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-display font-bold shrink-0 mr-4 shadow-sm",
-                                      ans.is_correct ? "bg-secondary text-on-secondary" : "bg-surface-bright border border-outline-variant/30 text-outline"
+                                      "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-4 shrink-0 font-mono",
+                                      ans.is_correct ? "bg-secondary text-on-primary" : "bg-surface-bright text-outline"
                                     )}>
-                                      {letters[idx] || '?'}
+                                      {String.fromCharCode(65 + idx)}
                                     </div>
-                                    <span className="flex-1 leading-relaxed"><MathRenderer content={ans.noi_dung || ""} /></span>
-                                    {ans.is_correct && (
-                                      <div className="ml-4 bg-secondary/20 p-1.5 rounded-full">
-                                        <CheckCircle2 className="w-5 h-5 text-secondary shrink-0" />
-                                      </div>
-                                    )}
+                                    <div className={cn("text-sm flex-1", ans.is_correct ? "text-on-surface font-semibold" : "text-on-surface-variant")}>
+                                      <MathRenderer content={ans.noi_dung || ""} />
+                                    </div>
+                                    {ans.is_correct && <CheckCircle2 className="w-5 h-5 text-secondary shrink-0 ml-4" />}
                                   </div>
-                                );
-                              })}
+                                ))}
+                              </div>
                             </div>
                           </div>
 
-                          {/* Right: Metadata */}
-                          <div className="col-span-4 space-y-8 bg-surface p-6 rounded-xl border border-outline-variant/30 shadow-sm h-fit sticky top-6">
+                          {/* Right: Meta Info */}
+                          <div className="col-span-4 space-y-6 border-l border-outline-variant/20 pl-10">
+                            <div>
+                              <h4 className="text-xs font-mono font-bold text-outline-variant uppercase tracking-widest mb-2">
+                                {language === 'vi' ? 'TÁC GIẢ' : 'CREATOR'}
+                              </h4>
+                              <p className="text-sm font-semibold text-on-surface">{creatorName}</p>
+                            </div>
+                            
+                            <div>
+                              <h4 className="text-xs font-mono font-bold text-outline-variant uppercase tracking-widest mb-2">
+                                {language === 'vi' ? 'MIỀN TRI THỨC' : 'TAXONOMY'}
+                              </h4>
+                              <div className="flex flex-wrap gap-2">
+                                {q.kien_thuc_cau_hoi?.map((k: any, idx: number) => (
+                                  <span key={idx} className="inline-flex items-center px-2.5 py-1 rounded bg-background border border-outline-variant/50 text-[11px] font-mono text-outline">
+                                    <Network className="w-3 h-3 mr-1.5 opacity-70" />
+                                    {k.kien_thuc?.ten_kien_thuc}
+                                  </span>
+                                ))}
+                                {(!q.kien_thuc_cau_hoi || q.kien_thuc_cau_hoi.length === 0) && (
+                                  <span className="text-xs text-outline-variant italic">{language === 'vi' ? 'Chưa gắn thẻ' : 'Untagged'}</span>
+                                )}
+                              </div>
+                            </div>
+
                             <div>
                               <h4 className="text-[10px] font-mono font-bold text-outline-variant uppercase tracking-widest mb-4 flex items-center">
                                 <Database className="w-3.5 h-3.5 mr-2" />
-                                Classification
+                                {language === 'vi' ? 'PHÂN LOẠI' : 'CLASSIFICATION'}
                               </h4>
                               <div className="space-y-3 font-mono text-xs">
                                 <div className="flex justify-between items-center py-2 border-b border-outline-variant/10">
-                                  <span className="text-outline">Type</span>
-                                  <span className="text-on-surface font-medium">{q.loai_cau_hoi || 'Multiple Choice'}</span>
+                                  <span className="text-outline">{language === 'vi' ? 'Loại' : 'Type'}</span>
+                                  <span className="text-on-surface font-medium">{q.loai_cau_hoi || (language === 'vi' ? 'Trắc nghiệm' : 'Multiple Choice')}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-outline-variant/10">
-                                  <span className="text-outline">Cognitive Lvl</span>
+                                  <span className="text-outline">{language === 'vi' ? 'Mức độ nhận thức' : 'Cognitive Lvl'}</span>
                                   <span className="text-primary font-bold bg-primary/10 px-2 py-0.5 rounded">Lvl {q.muc_do || 1}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2">
-                                  <span className="text-outline">Created</span>
+                                  <span className="text-outline">{language === 'vi' ? 'Ngày tạo' : 'Created'}</span>
                                   <span className="text-on-surface">{q.ngay_tao ? new Date(q.ngay_tao).toLocaleDateString() : 'N/A'}</span>
                                 </div>
                               </div>
@@ -473,12 +496,12 @@ export const Questions = () => {
                             <div>
                               <h4 className="text-[10px] font-mono font-bold text-outline-variant uppercase tracking-widest mb-4 flex items-center">
                                 <Network className="w-3.5 h-3.5 mr-2" />
-                                IRT Metrics (Simulation)
+                                {language === 'vi' ? 'THAM SỐ IRT (MÔ PHỎNG)' : 'IRT METRICS (SIMULATION)'}
                               </h4>
                               <div className="space-y-4 font-mono text-xs">
                                 <div>
                                   <div className="flex justify-between mb-1.5">
-                                    <span className="text-outline">Difficulty (b)</span>
+                                    <span className="text-outline">{language === 'vi' ? 'Độ khó (b)' : 'Difficulty (b)'}</span>
                                     <span className="text-on-surface font-bold">{q.b_diff?.toFixed(2) || '0.00'}</span>
                                   </div>
                                   <div className="h-1.5 w-full bg-background rounded-full overflow-hidden shadow-inner">
@@ -487,7 +510,7 @@ export const Questions = () => {
                                 </div>
                                 <div>
                                   <div className="flex justify-between mb-1.5">
-                                    <span className="text-outline">Discrimination (a)</span>
+                                    <span className="text-outline">{language === 'vi' ? 'Độ phân biệt (a)' : 'Discrimination (a)'}</span>
                                     <span className="text-on-surface font-bold">{q.a_discr?.toFixed(2) || '1.00'}</span>
                                   </div>
                                   <div className="h-1.5 w-full bg-background rounded-full overflow-hidden shadow-inner">
@@ -496,7 +519,7 @@ export const Questions = () => {
                                 </div>
                                 <div>
                                   <div className="flex justify-between mb-1.5">
-                                    <span className="text-outline">Guessing (c)</span>
+                                    <span className="text-outline">{language === 'vi' ? 'Đoán mò (c)' : 'Guessing (c)'}</span>
                                     <span className="text-on-surface font-bold">{q.c_guess?.toFixed(2) || '0.20'}</span>
                                   </div>
                                   <div className="h-1.5 w-full bg-background rounded-full overflow-hidden shadow-inner">

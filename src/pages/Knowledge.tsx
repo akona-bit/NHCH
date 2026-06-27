@@ -118,7 +118,7 @@ export const Knowledge = () => {
 
   const handleSave = async () => {
     if (!nodeName || !nodeCode) {
-      setError("Name and Code are required");
+      setError(language === 'vi' ? "Tên và Mã không được để trống" : "Name and Code are required");
       return;
     }
     setSaving(true);
@@ -152,7 +152,7 @@ export const Knowledge = () => {
       setViewState('view');
       setSelectedNodeId(nodeCode); // Select the newly created or edited node
     } catch (err: any) {
-      setError(err.message || 'An error occurred saving the node.');
+      setError(err.message || (language === 'vi' ? 'Đã xảy ra lỗi khi lưu điểm kiến thức.' : 'An error occurred saving the node.'));
     } finally {
       setSaving(false);
     }
@@ -200,7 +200,7 @@ export const Knowledge = () => {
       await fetchNodes();
       setViewState('view');
     } catch (err: any) {
-      setError(err.message || 'An error occurred deleting the node.');
+      setError(err.message || (language === 'vi' ? 'Đã xảy ra lỗi khi xóa điểm kiến thức.' : 'An error occurred deleting the node.'));
     } finally {
       setDeleting(false);
       setItemToDelete(null);
@@ -263,7 +263,7 @@ export const Knowledge = () => {
         {/* Left Sidebar Tree */}
         <div className="w-80 border-r border-outline-variant bg-surface flex flex-col shrink-0 relative z-10 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
           {loading ? (
-             <div className="p-8 text-center text-outline text-sm font-mono">Loading tree...</div>
+             <div className="p-8 text-center text-outline text-sm font-mono">{language === 'vi' ? 'Đang tải cấu trúc...' : 'Loading tree...'}</div>
           ) : (
             <KnowledgeTree 
               nodes={treeNodes} 
@@ -467,7 +467,7 @@ export const Knowledge = () => {
                       placeholder="e.g. DOM-PHYS-QM" 
                       className="w-full bg-background border border-outline-variant/50 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-primary font-mono font-bold transition-all disabled:opacity-50 disabled:bg-surface shadow-sm hover:border-outline-variant" 
                     />
-                    {viewState === 'edit' && <p className="text-[10px] text-outline mt-2 font-mono uppercase tracking-widest absolute -bottom-5 right-0">ID is immutable</p>}
+                    {viewState === 'edit' && <p className="text-[10px] text-outline mt-2 font-mono uppercase tracking-widest absolute -bottom-5 right-0">{language === 'vi' ? 'ID không thể thay đổi' : 'ID is immutable'}</p>}
                   </div>
                 </div>
 
@@ -497,7 +497,7 @@ export const Knowledge = () => {
                   </label>
                   <textarea 
                     className="w-full min-h-[160px] bg-background border border-outline-variant/50 rounded-xl px-4 py-4 text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 text-on-surface transition-all font-mono resize-y leading-relaxed shadow-sm hover:border-outline-variant"
-                    placeholder="Provide a comprehensive description of the knowledge domain..."
+                    placeholder={language === 'vi' ? 'Mô tả chi tiết về miền kiến thức này...' : 'Provide a comprehensive description of the knowledge domain...'}
                     value={description}
                     onChange={e => setDescription(e.target.value)}
                   ></textarea>

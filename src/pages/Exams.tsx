@@ -57,7 +57,7 @@ export const Exams = () => {
       if (!user.user) return;
       
       if (!newExam.ten_ky_thi) {
-        alert("Vui lòng nhập tên kỳ thi");
+        alert(language === 'vi' ? "Vui lòng nhập tên kỳ thi" : "Please enter the exam name");
         return;
       }
 
@@ -71,7 +71,7 @@ export const Exams = () => {
       
       if (error) {
         console.error("Create Exam Error:", error);
-        alert(`Error creating exam: ${error.message}`);
+        alert((language === 'vi' ? 'Lỗi tạo kỳ thi: ' : 'Error creating exam: ') + error.message);
         return;
       }
       
@@ -83,7 +83,7 @@ export const Exams = () => {
       fetchExams();
     } catch (err: any) {
       console.error(err);
-      alert(`Error creating exam: ${err.message}`);
+      alert((language === 'vi' ? 'Lỗi tạo kỳ thi: ' : 'Error creating exam: ') + err.message);
     }
   };
 
@@ -142,7 +142,7 @@ export const Exams = () => {
       
     } catch (err: any) {
       console.error(err);
-      alert('Error exporting data: ' + err.message);
+      alert((language === 'vi' ? 'Lỗi xuất dữ liệu: ' : 'Error exporting data: ') + err.message);
     }
   };
 
@@ -157,7 +157,7 @@ export const Exams = () => {
       await fetchExams();
     } catch (err) {
       console.error("Error deleting exam:", err);
-      alert("Failed to delete exam.");
+      alert(language === 'vi' ? "Xóa kỳ thi thất bại." : "Failed to delete exam.");
     } finally {
       setDeleting(false);
       setItemToDelete(null);
@@ -180,7 +180,7 @@ export const Exams = () => {
       await fetchExams();
     } catch (err: any) {
       console.error(err);
-      alert('Error bulk deleting exams: ' + err.message);
+      alert((language === 'vi' ? 'Lỗi xóa nhiều kỳ thi: ' : 'Error bulk deleting exams: ') + err.message);
     } finally {
       setDeleting(false);
     }
@@ -263,9 +263,9 @@ export const Exams = () => {
               </thead>
               <tbody className="divide-y divide-outline-variant/50">
                 {loading ? (
-                  <tr><td colSpan={5} className="p-8 text-center text-outline-variant">Loading exams...</td></tr>
+                  <tr><td colSpan={5} className="p-8 text-center text-outline-variant">{language === 'vi' ? 'Đang tải danh sách kỳ thi...' : 'Loading exams...'}</td></tr>
                 ) : filteredExams.length === 0 ? (
-                  <tr><td colSpan={5} className="p-8 text-center text-outline-variant">No exams found. Create one to get started.</td></tr>
+                  <tr><td colSpan={5} className="p-8 text-center text-outline-variant">{language === 'vi' ? 'Không tìm thấy kỳ thi nào. Tạo một kỳ thi để bắt đầu.' : 'No exams found. Create one to get started.'}</td></tr>
                 ) : (
                   filteredExams.map(exam => (
                     <tr key={exam.ma_ky_thi} className={cn("hover:bg-surface-bright shadow-sm-high transition-colors cursor-pointer group", selectedItems.includes(exam.ma_ky_thi) && "bg-primary/5")}>
@@ -281,7 +281,7 @@ export const Exams = () => {
                       <td className="px-6 py-4 font-mono font-bold text-on-surface">EXM-24-{exam.ma_ky_thi.toString().padStart(3, '0')}</td>
                       <td className="px-6 py-4">
                         <div className="font-bold text-on-surface mb-1">{exam.ten_ky_thi}</div>
-                        <div className="text-[10px] font-mono text-outline">Mã môn: {exam.ma_ky_thi}</div>
+                        <div className="text-[10px] font-mono text-outline">{language === 'vi' ? 'Mã môn:' : 'Course code:'} {exam.ma_ky_thi}</div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center text-xs text-on-surface mb-1">
@@ -297,7 +297,7 @@ export const Exams = () => {
                               navigate(`/matrix?examId=${exam.ma_ky_thi}`);
                             }}
                             className="p-1.5 text-outline hover:text-primary hover:bg-primary/10 rounded transition-colors"
-                            title="Generate Matrix"
+                            title={language === 'vi' ? 'Tạo Ma Trận' : 'Generate Matrix'}
                           >
                             <LayoutTemplate className="w-4 h-4" />
                           </button>
@@ -307,7 +307,7 @@ export const Exams = () => {
                               setItemToDelete(exam);
                             }}
                             className="p-1.5 text-outline hover:text-error hover:bg-error/10 rounded transition-colors"
-                            title="Delete Exam"
+                            title={language === 'vi' ? 'Xóa Kỳ Thi' : 'Delete Exam'}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
