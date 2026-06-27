@@ -42,7 +42,7 @@ export const QuestionReview = () => {
           muc_do,
           ngay_cap_nhat,
           nguoi_tao,
-          users:nguoi_tao (ho_ten),
+          users!fk_ch_user_tao (ho_ten),
           ngu_lieu:ma_ngu_lieu (ma_ngu_lieu, noi_dung)
         `)
         .eq('tinh_trang', 'draft')

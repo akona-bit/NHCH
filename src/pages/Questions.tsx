@@ -38,14 +38,14 @@ export const Questions = () => {
       }
 
       // Fetch questions
-      const { data: qData } = await supabase
+      const { data: qData, error: fetchError } = await supabase
         .from('cau_hoi')
         .select(`
           ma_cau_hoi,
           noi_dung,
           tinh_trang,
           nguoi_tao,
-          users:nguoi_tao ( ho_ten ),
+          users!fk_ch_user_tao ( ho_ten ),
           dap_an ( ma_dap_an, noi_dung, is_correct ),
           kien_thuc_cau_hoi (
             kien_thuc ( ten_kien_thuc )
@@ -54,11 +54,17 @@ export const Questions = () => {
         `)
         .order('ma_cau_hoi', { ascending: false });
 
+      if (fetchError) {
+        console.error("Supabase Query Error:", fetchError);
+        setQuestions([{ ma_cau_hoi: -1, noi_dung: 'ERROR: ' + JSON.stringify(fetchError), tinh_trang: 'draft' }]);
+      }
+
       if (qData) {
         setQuestions(qData);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching data:", error);
+      setQuestions([{ ma_cau_hoi: -2, noi_dung: 'CATCH ERROR: ' + error.message, tinh_trang: 'draft' }]);
     } finally {
       setLoading(false);
     }
