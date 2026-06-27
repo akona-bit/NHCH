@@ -46,7 +46,7 @@ export const Questions = () => {
           tinh_trang,
           nguoi_tao,
           users!fk_ch_user_tao ( ho_ten ),
-          dap_an ( ma_dap_an, noi_dung, is_correct ),
+          dap_an!fk_da_cauhoi ( ma_dap_an, noi_dung, is_correct ),
           kien_thuc_cau_hoi (
             kien_thuc ( ten_kien_thuc )
           ),
